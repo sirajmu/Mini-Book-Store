@@ -77,8 +77,32 @@ app.post("/Create", async (req, res) => {
 });
 
 
+app.delete("/DeleteBook", async (req, res) => {
+    try {
+        const {bookID} = req.query;
+        if (!bookID){
+            return res.status(401).json({message:'Please be sure to input a book ID before you try to delete.'})
+        }
+        const bookIdSearch = await pool.query(
+            'SELECT * FROM books WHERE id = $1',
+            [bookID]
+        );
+        if(bookIdSearch.rowCount == 0){
+            return res.status(401).json('Book does not exist in database. Please choose one that exists to be able to delete it.')            
+        }
+        await pool.query(
+            'DELETE FROM books WHERE id = $1 RETURNING *',
+            [bookID]
+        )
+        res.status(200).json({message: 'Book deleted successfully.'});
+    } catch (err) {
+        console.error(err)
+        return res.status(500).json({message: 'Internal Server Error'})
+      }
+  });
 
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
+
