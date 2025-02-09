@@ -80,25 +80,58 @@ app.post("/Create", async (req, res) => {
 app.delete("/DeleteBook", async (req, res) => {
     try {
         const {bookID} = req.query;
-        if (!bookID){
+        if (!bookID || bookID.trim() === ''){
             return res.status(401).json({message:'Please be sure to input a book ID before you try to delete.'})
         }
+
         const bookIdSearch = await pool.query(
-            'SELECT * FROM books WHERE id = $1',
+            'SELECT * FROM books WHERE book_id = $1',
             [bookID]
         );
-        if(bookIdSearch.rowCount == 0){
+
+        if(bookIdSearch.rows.length === 0){
             return res.status(401).json('Book does not exist in database. Please choose one that exists to be able to delete it.')            
         }
+
         await pool.query(
-            'DELETE FROM books WHERE id = $1 RETURNING *',
+            'DELETE FROM books WHERE book_id = $1 RETURNING *',
             [bookID]
         )
+
         res.status(200).json({message: 'Book deleted successfully.'});
+
     } catch (err) {
         console.error(err)
         return res.status(500).json({message: 'Internal Server Error'})
       }
+  });
+
+  app.put("/EditBook", async (req, res) => {
+    try {
+        const { oldBookID, newBookID } = req.body; 
+
+        if(!oldBookID || !newBookID || newBookID.trim() === '' || oldBookID.trim() === ''){
+            return res.status(401).json({message: 'Both old book id and new book id is required'});
+        }
+
+          const bookIDUpdate = await pool.query(
+            'UPDATE books SET book_id = $1 WHERE book_id = $2 RETURNING *', 
+            [newBookID, oldBookID]
+        );
+
+        if(bookIDUpdate.rows.length===0){
+            return res.status(404).json("book id not found in the database");
+        }
+
+        res.status(200).json(
+            {
+                message: 'book id updated successfully'
+            }
+        );
+        
+    } catch (err) {
+      return res.status(500).json({ message: 'Internal server error' });
+    }
   });
 
 const PORT = 3000;
