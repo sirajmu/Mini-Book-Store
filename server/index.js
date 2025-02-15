@@ -134,6 +134,17 @@ app.delete("/DeleteBook", async (req, res) => {
     }
   });
 
+  app.get("/books", async (req, res) => {
+    try {
+      const books = await pool.query("SELECT * FROM books");
+      res.status(200).json(books.rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ message: "Internal Server Error" });
+    }
+  });
+  
+
 const PORT = 3000;
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
