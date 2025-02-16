@@ -3,6 +3,10 @@ const express = require('express');
 const app = express();
 const pool = require('./db');
 
+const cors = require('cors'); 
+app.use(cors()); 
+
+
 app.use(express.json());
 
 app.get("/Search", async (req, res) => {
@@ -32,48 +36,32 @@ app.get("/Search", async (req, res) => {
         return res.status(500).json({ message: 'Internal server error' });
       }
 });
-
 app.post("/Create", async (req, res) => {
-  try {
-      // Collect book details from request body
-      const { bookTitle, bookAuthor } = req.body;
+    try {
+        const { bookTitle, bookAuthor, imageUrl } = req.body;
 
-      // Validate input
-      if (!bookTitle || !bookAuthor || bookTitle.trim() === '' || bookAuthor.trim() === '') {
-          return res.status(400).json({ message: 'Please provide all required book details before submitting the form.' });
-      }
+        if (!bookTitle || !bookAuthor || bookTitle.trim() === '' || bookAuthor.trim() === '') {
+            return res.status(400).json({ message: 'Please provide all required book details before submitting the form.' });
+        }
 
-      // Trim input fields
-      const title = bookTitle.trim();
-      const author = bookAuthor.trim();
+        const title = bookTitle.trim();
+        const author = bookAuthor.trim();
+        const image_url = imageUrl?.trim() || "https://via.placeholder.com/150"; // Default image if not provided
 
-      // Check if the book already exists
-      const bookSearch = await pool.query(
-          'SELECT * FROM books WHERE title ILIKE $1 AND author ILIKE $2',
-          [title, author]
-      );
+        const newBook = await pool.query(
+            'INSERT INTO books (title, author, image_url) VALUES ($1, $2, $3) RETURNING *',
+            [title, author, image_url]
+        );
 
-      // Return conflict error if book already exists
-      if (bookSearch.rows.length > 0) {
-          return res.status(409).json({ message: 'Book already exists in the database.' });
-      }
+        res.status(201).json({
+            message: 'Book created successfully.',
+            book: newBook.rows[0]
+        });
 
-      // Insert new book into the database and return the created book
-      const newBook = await pool.query(
-          'INSERT INTO books (title, author) VALUES ($1, $2) RETURNING *',
-          [title, author]
-      );
-
-      // Return success response with the newly created book
-      res.status(201).json({
-          message: 'Book created successfully.',
-          book: newBook.rows[0]
-      });
-
-  } catch (err) {
-      console.error(err);
-      return res.status(500).json({ message: 'Internal Server Error' });
-  }
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ message: 'Internal Server Error' });
+    }
 });
 
 
@@ -134,16 +122,17 @@ app.delete("/DeleteBook", async (req, res) => {
     }
   });
 
-  app.get("/books", async (req, res) => {
+
+app.get("/ReadAllBooks", async (req, res) => {
     try {
-      const books = await pool.query("SELECT * FROM books");
-      res.status(200).json(books.rows);
+        const books = await pool.query("SELECT book_id, title, author, image_url FROM books");
+        res.status(200).json(books.rows);
     } catch (err) {
-      console.error(err);
-      res.status(500).json({ message: "Internal Server Error" });
+        console.error(err);
+        res.status(500).json({ message: "Internal Server Error" });
     }
-  });
-  
+});
+
 
 const PORT = 3000;
 app.listen(PORT, () => {
