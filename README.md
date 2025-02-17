@@ -1,3 +1,15 @@
+
+1. to add a book, please click Add Book on the right corner of navigation bar
+2. to delete a book click delete button that found below each book
+3. to login please login // needs future update
+4. I used adding book form for editing the book //needs huge update  
+
+
+
+
+
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
