@@ -1,24 +1,12 @@
-import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const AddBook = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const editingBook = location.state?.book || null; // Get book from state if editing
-
   const [bookTitle, setBookTitle] = useState("");
   const [bookAuthor, setBookAuthor] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [error, setError] = useState("");
-
-  // Prefill form if editing a book
-  useEffect(() => {
-    if (editingBook) {
-      setBookTitle(editingBook.title);
-      setBookAuthor(editingBook.author);
-      setImageUrl(editingBook.image_url || "");
-    }
-  }, [editingBook]);
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,41 +24,29 @@ const AddBook = () => {
     };
 
     try {
-      let response, data;
+      const response = await fetch("http://localhost:3000/Create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookData),
+      });
 
-      if (editingBook) {
-        // Send PUT request to update book
-        response = await fetch(`http://localhost:3000/EditBook?bookID=${editingBook.book_id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bookData),
-        });
-      } else {
-        // Send POST request to create new book
-        response = await fetch("http://localhost:3000/Create", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(bookData),
-        });
-      }
-
-      data = await response.json();
+      const data = await response.json();
 
       if (response.ok) {
-        alert(editingBook ? "Book updated successfully!" : "Book added successfully!");
-        navigate("/"); // Redirect after adding/updating
+        alert("Book added successfully!");
+        navigate("/"); // Redirect to home page after adding book
       } else {
-        setError(data.message || "Failed to save book");
+        setError(data.message || "Failed to add book");
       }
     } catch (error) {
-      console.error("Error saving book:", error);
+      console.error("Error adding book:", error);
       setError("Something went wrong. Please try again later.");
     }
   };
 
   return (
     <div className="container mt-5">
-      <h2>{editingBook ? "Edit Book" : "Add a New Book"}</h2>
+      <h2>Add a New Book</h2>
       {error && <div className="alert alert-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="mb-3">
@@ -102,9 +78,7 @@ const AddBook = () => {
             onChange={(e) => setImageUrl(e.target.value)}
           />
         </div>
-        <button type="submit" className="btn btn-primary">
-          {editingBook ? "Update Book" : "Add Book"}
-        </button>
+        <button type="submit" className="btn btn-primary">Add Book</button>
       </form>
     </div>
   );
