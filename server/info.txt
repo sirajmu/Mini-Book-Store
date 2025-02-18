@@ -1,0 +1,48 @@
+database column for user ---> name, email, password, role
+
+CREATE TABLE books (
+  book_id SERIAL PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  author VARCHAR(255) NOT NULL
+);
+
+INSERT INTO books (title, author) VALUES
+('To Kill a Mockingbird', 'Harper Lee'),
+('1984', 'George Orwell'),
+('The Great Gatsby');
+
+
+CREATE TABLE users (
+  user_id SERIAL PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  email VARCHAR(255) Unique NOT NULL, 
+  password VARCHAR(50) NOT NULL,
+  role VARCHAR(255) Default 'user');
+
+
+  
+INSERT INTO users (name, email, password, role) VALUES
+('siraj', 'siraj@gmail.com', 'abcd', 'admin'),
+('mety', 'mety@gmail.com', 'abcd', 'user'),
+INSERT INTO users (name, email, password, role) VALUES
+('siraj', 'siraj@gmail.com', 'abcd', 'admin'),
+('mety', 'mety@gmail.com', 'abcd', 'user'),
+('aron', 'aron@gmail.com', 'abcd', 'user'),
+('rahel', 'rahel@gmail.com', 'abcd', 'user'),
+('nati', 'nati@gmail.com', 'abcd', 'user');
+('aron', 'aron@gmail.com', 'abcd', 'user'),
+('rahel', 'rahel@gmail.com', 'abcd', 'user'),
+('nati', 'nati@gmail.com', 'abcd', 'user');
+
+
+ALTER TABLE books ADD COLUMN image_url VARCHAR(255);
+
+
+
+UPDATE books
+SET image_url = '1984.jpg'
+WHERE book_id= 2;
+
+
+
+
